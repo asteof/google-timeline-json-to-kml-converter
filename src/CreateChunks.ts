@@ -5,7 +5,7 @@ import { Timeline } from './types';
 import { getSearchValue } from './utils/Formatters';
 
 const jsonFolderPath = path.resolve(__dirname, '../', 'json');
-const locationHistoryFilePath = path.resolve(jsonFolderPath, 'location-history.json');
+const locationHistoryFilePath = path.resolve(__dirname, '../', 'location-history.json');
 
 export const createJsonChunks = (yearStart: number, yearEnd: number) => {
   if (fs.existsSync(locationHistoryFilePath)) {
@@ -24,7 +24,7 @@ export const createJsonChunks = (yearStart: number, yearEnd: number) => {
 };
 
 const getSegmentsByYear = (semanticSegments: Timeline, year: number) => {
-  const folderPath = path.resolve(jsonFolderPath, 'chunks', year.toString());
+  const folderPath = path.resolve(jsonFolderPath, year.toString());
   createFolder(folderPath);
 
   for (let month = 1; month < 13; month++) {

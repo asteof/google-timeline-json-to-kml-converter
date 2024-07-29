@@ -1,10 +1,15 @@
 import path from 'path';
 import fs from 'fs';
 
-export const createFolder = (folderPath: string, prefix: string = 'FileUtils') => {
+export const createFolder = (folderPath: string, prefix: string = 'FileUtils', skipLog: boolean = false) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
-    console.log(`[${prefix}] Folder "${folderPath}" created successfully.`);
+    if (!skipLog) {
+      console.log(`[${prefix}] Folder "${folderPath}" created successfully.`);
+    }
+  }
+  if (!skipLog) {
+    console.log(`[${prefix}] Folder "${folderPath}" already exists. Skipping creation.`);
   }
 };
 
