@@ -2,13 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { createFile, createFolder } from './utils/FileUtils';
 import { Timeline, TimelinePathSegment, TimelineVisitSegment } from './types';
-import { TOKENS } from './Constants';
-import { createNameElement, createPlacemark } from './utils/KMLElement';
-import { getKMLCompatibleCoordinates } from './utils/TimelinePath';
+import { createKMLFileContent } from './utils/KMLElement';
+import { getKMLPathCoordinates } from './utils/TimelinePath';
 import { getSearchValue } from './utils/Formatters';
 import formatXml from 'xml-formatter';
+import { getKMLVisitCoordinates } from './utils/Visit';
 
-const jsonChunksFolderPath = path.resolve(__dirname, '../', 'json', 'chunks');
+const jsonChunksFolderPath = path.resolve(__dirname, '../', 'json');
 const kmlFolderPath = path.resolve(__dirname, '../', 'kml');
 
 export const parseJsonChunk = (year: string, searchValue: string) => {
@@ -18,9 +18,16 @@ export const parseJsonChunk = (year: string, searchValue: string) => {
       if (err) throw err;
 
       const locationDataForMonth = JSON.parse(data);
-      const { timelinePaths, visits } = divideSemanticSegmentsIntoLogicalParts(locationDataForMonth);
-      const allCoordinates = timelinePaths.map((path) => getKMLCompatibleCoordinates(path));
-      createTimelinePathKML(allCoordinates, year, searchValue);
+      const { paths, visits } = divideSemanticSegmentsIntoLogicalParts(locationDataForMonth);
+      const pathCoordinates = paths.map((path) => getKMLPathCoordinates(path));
+      const visitCoordinates = Array.from(
+        new Set(visits.map(visit => getKMLVisitCoordinates(visit))),
+      );
+      createPathKML(pathCoordinates, year, searchValue);
+      createVisitsKML(visitCoordinates, year, searchValue);
+      if (searchValue === '2015-05') {
+        console.log({ pathCoordinates, visitCoordinates });
+      }
     });
   }
 };
@@ -35,12 +42,12 @@ export const createKMLFiles = (yearStart: number, yearEnd: number) => {
 };
 
 const divideSemanticSegmentsIntoLogicalParts = (semanticSegments: Timeline) => {
-  const timelinePaths: TimelinePathSegment[] = [];
+  const paths: TimelinePathSegment[] = [];
   const visits: TimelineVisitSegment[] = [];
 
   semanticSegments.forEach(semanticSegment => {
     if (semanticSegment.hasOwnProperty('timelinePath')) {
-      timelinePaths.push(semanticSegment as TimelinePathSegment);
+      paths.push(semanticSegment as TimelinePathSegment);
     }
 
     if (semanticSegment.hasOwnProperty('visit')) {
@@ -49,35 +56,25 @@ const divideSemanticSegmentsIntoLogicalParts = (semanticSegments: Timeline) => {
   });
 
   return {
-    timelinePaths,
+    paths,
     visits,
   };
 };
 
-const createFileContent = (coordinatesCollection: string[], name: string) => {
-  const placemarks = coordinatesCollection.map((coordinates) => createPlacemark(name, coordinates));
-
-  const content = [
-    TOKENS.xml,
-    TOKENS.kmlStart,
-    TOKENS.documentStart,
-    createNameElement(name),
-    TOKENS.style1,
-    TOKENS.style2,
-    TOKENS.styleMap,
-    ...placemarks,
-    TOKENS.documentEnd,
-    TOKENS.kmlEnd,
-  ];
-
-  return content.join('\n');
-};
-
-const createTimelinePathKML = (coordinates: string[], year: string, searchValue: string) => {
+const createPathKML = (coordinates: string[], year: string, searchValue: string) => {
   const folderPath = path.resolve(kmlFolderPath, year);
   createFolder(folderPath);
 
   const filePath = path.resolve(folderPath, `Timeline-Path-${searchValue}.kml`);
-  const content = formatXml(createFileContent(coordinates, searchValue), { collapseContent: true });
+  const content = formatXml(createKMLFileContent(coordinates, searchValue, 'path'), { collapseContent: true });
+  createFile(filePath, content);
+};
+
+const createVisitsKML = (coordinates: string[], year: string, searchValue: string) => {
+  const folderPath = path.resolve(kmlFolderPath, year);
+  createFolder(folderPath);
+
+  const filePath = path.resolve(folderPath, `Visits-${searchValue}.kml`);
+  const content = formatXml(createKMLFileContent(coordinates, searchValue, 'visit'), { collapseContent: true });
   createFile(filePath, content);
 };
