@@ -1,5 +1,7 @@
 export const timelinePathCoordinatesSeparator = ',0 ';
 
+export const ALTITUDE = '69.42000000000000';
+
 export const TOKENS = {
   xml: '<?xml version="1.0" encoding="UTF-8"?>',
   kmlStart: '<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">',

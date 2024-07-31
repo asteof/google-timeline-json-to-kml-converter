@@ -1,7 +1,5 @@
 # google-timeline-json-to-kml-converter
 
-## Summary
-
 This is a simple converter that parses your `location-history.json` file into KML.
 
 Idea to create such a thing found me when I tried to export data for
@@ -34,16 +32,22 @@ or other device that stores timeline data and finding it in the Timeline options
 
 ## Working principle
 
-Firstly it creates folders `json` and `kml` in root directory.
+### Setup
 
-Secondly, it separates data from `location-history.json` into JSON chunks by year and month.
+Folders `json` and `kml` are created in root directory.
 
-For example, your timeline looks like this:
+### JSON separation
 
-In June 2024 (`2024-06-25`) you went to a Nice (France), then suddenly got to San Marino 
-and from there went to travel to Stuttgart (Germany) 
+Data from `location-history.json` are separated into JSON chunks by year and month.
 
-In July 2025 (`2025-07-25`) you have visited Kaunas (Lithuania)
+For example, your timeline may be described as:
+
+> In June 2024 (`2024-06-25`) you went to a Nice (France), then suddenly got to San Marino 
+and from there went to travel to Stuttgart (Germany)
+> 
+> In July 2025 (`2025-07-25`) you have visited Kaunas (Lithuania)
+
+In JSON it looks like this:
 
  ```json
 {
@@ -103,5 +107,75 @@ Files are grouped by month, which means all monthly data will be contained in on
 
 If there is no entry for month (eg `2024-01`), then the file creation is skipped. 
 
-After all JSON files are created, they are rewritten into KML.
+### KML generation 
 
+After all JSON files are created, they are rewritten into KML.
+Each JSON file corresponds to 1 or 2 KML files.
+
+From the above `json` folder structure the next `kml` structure is created:
+
+```
+project 
+│
+└───kml
+│   └───2024
+│   │    │   Timeline-Path-2024-06.kml
+│   │
+│   └───2025
+│        │   Visits-2025-07.kml
+```
+If presented location history included visit segments in 2024-06
+and timeline path segments in 2025-07, structure would look like this:
+
+```
+project 
+│
+└───kml
+│   └───2024
+│   │    │   Timeline-Path-2024-06.kml
+│   │    │   Visits-2024-06.kml
+│   │
+│   └───2025
+│        │   Timeline-Path-2025-07.kml
+│        │   Visits-2025-07.kml
+```
+
+`Timeline-Path-2024-06.kml` corresponds to the first semantic segment of location history
+
+As it is path, so it's drawn as a line.
+For each `TimelinePath` segment that was found in current file of current folder,
+a `Placemark` is created.
+
+A `Placemark` is an element that contains part of your map,
+for example a dot (`<Point>`) or a line (`<LineString>`)
+
+```xml
+<Placemark id="B1HAEA235JKF">
+    <name>2025-07</name>
+    <LookAt>
+        <longitude>7.26116323</longitude>
+        <latitude>43.7101590</latitude>
+        <heading>0</heading>
+        <tilt>0</tilt>
+        <gx:fovy>35</gx:fovy>
+        <altitudeMode>absolute</altitudeMode>
+    </LookAt>
+    <styleUrl>#__managed_style_0B628CDDC0322E7B1F84</styleUrl>
+    <LineString>
+        <coordinates>
+            7.26116323,43.7101590,0 
+            12.4574775,43.9407384,0
+            9.1828452,48.775989,0
+        </coordinates>
+    </LineString>
+</Placemark>
+```
+Line contains `<coordinates>` element which is filled with coordinates.
+Also `Placemark` has `<LookAt>` element that has its own coordinates. 
+They are set from the first pair of coordinates array. 
+
+> Pay attention, that in `location-history.json`
+> coordinates look this way `"43.7101590°, 7.26116323°"`, where the first value is
+> latitude and the second is longitude.
+> 
+> But in `<coordinates>` element the coordinates values are reversed

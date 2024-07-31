@@ -8,37 +8,43 @@ const jsonFolderPath = path.resolve(__dirname, '../', 'json');
 const locationHistoryFilePath = path.resolve(__dirname, '../', 'location-history.json');
 
 export const createJsonChunks = (yearStart: number, yearEnd: number) => {
-  if (fs.existsSync(locationHistoryFilePath)) {
-    fs.readFile(locationHistoryFilePath, 'utf8', (err, data) => {
-        if (err) console.log(err);
+  return new Promise((resolve, reject) => {
+    if (fs.existsSync(locationHistoryFilePath)) {
+      fs.readFile(locationHistoryFilePath, 'utf8', (err, data) => {
+          if (err) {
+            reject(err);
+            console.log(err);
+          }
 
-        const locationData = JSON.parse(data);
-        const { semanticSegments } = locationData;
+          const locationData = JSON.parse(data);
+          const { semanticSegments } = locationData;
 
-        for (let year = yearStart; year < yearEnd + 1; year++) {
-          getSegmentsByYear(semanticSegments, year);
-        }
-      },
-    );
-  }
+          for (let year = yearStart; year < yearEnd + 1; year++) {
+            getSegmentsByYear(semanticSegments, year);
+          }
+
+          resolve();
+        },
+      );
+    }
+  });
 };
 
 const getSegmentsByYear = (semanticSegments: Timeline, year: number) => {
   const folderPath = path.resolve(jsonFolderPath, year.toString());
-  createFolder(folderPath);
+  createFolder(folderPath, 'JSON');
 
   for (let month = 1; month < 13; month++) {
     const searchValue = getSearchValue(year, month);
     const filePath = path.resolve(folderPath, `${searchValue}.json`);
     const selectedMonthSegments = getSegmentsByMonth(semanticSegments, searchValue);
     if (selectedMonthSegments.length > 0) {
-      createFile(filePath, JSON.stringify(selectedMonthSegments, null, 2));
+      createFile(filePath, JSON.stringify(selectedMonthSegments, null, 2), 'JSON');
     }
   }
 };
 
 const getSegmentsByMonth = (segments: Timeline, searchValue: string) => {
-  console.log(searchValue);
   return segments.filter((segment) => {
     return !!segment.startTime.includes(searchValue);
   });

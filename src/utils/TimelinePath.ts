@@ -2,9 +2,9 @@ import { TimelinePathSegment } from '../types';
 import { timelinePathCoordinatesSeparator } from '../Constants';
 import { getCoordinatesPair } from './Formatters';
 
-export const getKMLCompatibleCoordinates = (timelinePathSegment: TimelinePathSegment) => {
+export const getKMLPathCoordinates = (timelinePathSegment: TimelinePathSegment) => {
   return timelinePathSegment.timelinePath
-    .map(getCoordinatesPair)
+    .map((point) => getCoordinatesPair(point.point))
     .join(timelinePathCoordinatesSeparator)
     .concat(timelinePathCoordinatesSeparator);
 };

@@ -4,4 +4,4 @@ export const getSearchValue = (year: number, month: number) => {
     .slice(0, 7);
 };
 
-export const getCoordinatesPair = point => point.point.replace(/[ °]/g, '').split(',').reverse();
+export const getCoordinatesPair = (value: string) => value.replace(/[ °]/g, '').split(',').reverse();
