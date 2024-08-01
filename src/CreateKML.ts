@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createFile, createFolder } from './utils/FileUtils';
-import { Timeline, TimelinePathSegment, TimelineVisitSegment } from './types';
+import { Timeline, TimelinePathSegment, TimelineType, TimelineVisitSegment } from './types';
 import { createKMLFileContent } from './utils/KMLElement';
 import { getKMLPathCoordinates } from './utils/TimelinePath';
 import { getSearchValue } from './utils/Formatters';
@@ -23,11 +23,7 @@ export const parseJsonChunk = (year: string, searchValue: string) => {
       const visitCoordinates = Array.from(
         new Set(visits.map(visit => getKMLVisitCoordinates(visit))),
       );
-      createPathKML(pathCoordinates, year, searchValue);
-      createVisitsKML(visitCoordinates, year, searchValue);
-      if (searchValue === '2015-05') {
-        console.log({ pathCoordinates, visitCoordinates });
-      }
+      populateKML({ pathCoordinates, visitCoordinates, year, searchValue });
     });
   }
 };
@@ -61,20 +57,21 @@ const divideSemanticSegmentsIntoLogicalParts = (semanticSegments: Timeline) => {
   };
 };
 
-const createPathKML = (coordinates: string[], year: string, searchValue: string) => {
+const populateKML = ({ pathCoordinates, visitCoordinates, year, searchValue }: {
+  pathCoordinates: string[],
+  visitCoordinates: string[],
+  year: string,
+  searchValue: string
+}) => {
   const folderPath = path.resolve(kmlFolderPath, year);
-  createFolder(folderPath);
+  createFolder(folderPath, 'KML');
 
-  const filePath = path.resolve(folderPath, `Timeline-Path-${searchValue}.kml`);
-  const content = formatXml(createKMLFileContent(coordinates, searchValue, 'path'), { collapseContent: true });
-  createFile(filePath, content);
+  createKMLFile(pathCoordinates, year, searchValue, folderPath, `Timeline-Path-${searchValue}`, 'path');
+  createKMLFile(visitCoordinates, year, searchValue, folderPath, `Visits-${searchValue}`, 'visit');
 };
 
-const createVisitsKML = (coordinates: string[], year: string, searchValue: string) => {
-  const folderPath = path.resolve(kmlFolderPath, year);
-  createFolder(folderPath);
-
-  const filePath = path.resolve(folderPath, `Visits-${searchValue}.kml`);
-  const content = formatXml(createKMLFileContent(coordinates, searchValue, 'visit'), { collapseContent: true });
-  createFile(filePath, content);
+const createKMLFile = (coordinates: string[], year: string, searchValue: string, folderPath: string, fileName: string, type: TimelineType) => {
+  const filePath = path.resolve(folderPath, `${fileName}.kml`);
+  const content = formatXml(createKMLFileContent(coordinates, searchValue, type), { collapseContent: true });
+  createFile(filePath, content, type);
 };

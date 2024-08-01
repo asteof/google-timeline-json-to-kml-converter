@@ -31,3 +31,5 @@ export interface TimelineVisitSegment {
 }
 
 export type Timeline = (TimelinePathSegment | TimelineVisitSegment)[]
+
+export type TimelineType = 'path' | 'visit';

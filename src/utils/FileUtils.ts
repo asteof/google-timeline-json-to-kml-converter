@@ -23,7 +23,7 @@ export const createFile = (
 
   if (rewrite || !fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, content);
-    console.log(`\n[${prefix}] File ${fileName} created.\n`);
+    console.log(`[${prefix}] File ${fileName} created.`);
   } else {
     console.log(`[${prefix}] File ${fileName} already exists. Skipping creation.`);
   }
