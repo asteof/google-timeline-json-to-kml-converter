@@ -16,6 +16,8 @@ that normally used that data.
 
 After a while of searching web without finding answer I decided to make my own parser :)
 
+[KML tutorial](https://developers.google.com/kml/documentation/kml_tut)
+
 ## How to use
 
 1. You have to get `location-history.json` file from Timeline.
@@ -26,9 +28,10 @@ or other device that stores timeline data and finding it in the Timeline options
 3. Run `npm install`
 4. Put your `location-history.json` in the root of the project
 5. Run `generate`
-6. If everything is done properly you should get your files in `./kml` folder
-7. ????????????
-8. Enjoy!
+6. Wait for a bit
+7. If everything is done properly you should get your files in `./kml` folder
+8. ????????????
+9. Enjoy!
 
 ## Working principle
 
@@ -109,6 +112,8 @@ If there is no entry for month (eg `2024-01`), then the file creation is skipped
 
 ### KML generation 
 
+#### TimelinePath
+
 After all JSON files are created, they are rewritten into KML.
 Each JSON file corresponds to 1 or 2 KML files.
 
@@ -140,14 +145,18 @@ project
 │        │   Visits-2025-07.kml
 ```
 
-`Timeline-Path-2024-06.kml` corresponds to the first semantic segment of location history
-
-As it is path, so it's drawn as a line.
+`Timeline-Path-2024-06.kml` corresponds to the first semantic segment of location history.
 For each `TimelinePath` segment that was found in current file of current folder,
 a `Placemark` is created.
 
-A `Placemark` is an element that contains part of your map,
-for example a dot (`<Point>`) or a line (`<LineString>`)
+A [Placemark](https://developers.google.com/kml/documentation/kmlreference#placemark)
+is an element that contains part of your map,
+for example a 
+[single location marker](https://developers.google.com/kml/documentation/kmlreference#point)
+(`<Point>`) or a 
+[path](https://developers.google.com/kml/documentation/kmlreference#linestring)
+(`<LineString>`)
+
 
 ```xml
 <Placemark id="B1HAEA235JKF">
@@ -170,12 +179,54 @@ for example a dot (`<Point>`) or a line (`<LineString>`)
     </LineString>
 </Placemark>
 ```
-Line contains `<coordinates>` element which is filled with coordinates.
-Also `Placemark` has `<LookAt>` element that has its own coordinates. 
-They are set from the first pair of coordinates array. 
+Line contains `<coordinates>` element which is filled with coordinate tuples.
+Also `Placemark` has 
+[`<LookAt>` element](https://developers.google.com/kml/documentation/kmlreference#lookat)
+that has its own coordinates. 
+They are set from the first tuple of coordinates array. 
 
 > Pay attention, that in `location-history.json`
 > coordinates look this way `"43.7101590°, 7.26116323°"`, where the first value is
 > latitude and the second is longitude.
 > 
 > But in `<coordinates>` element the coordinates values are reversed
+
+#### TimelineVisits
+
+Visit files are generated simultaneously with path files,
+with respect to synchronous IO operations.
+
+`<Placemark>` for visit segment looks like this 
+
+```xml
+<Placemark id="02299570C5322EA2FE7F">
+    <name>Untitled placemark</name>
+    <LookAt>
+        <longitude>54.8973255</longitude>°, 
+        <latitude>23.9139920</latitude>
+        <altitude>69.42000000000000</altitude>
+        <heading>0</heading>
+        <tilt>0</tilt>
+        <gx:fovy>35</gx:fovy>
+        <range>250.0000000000000</range>
+        <altitudeMode>absolute</altitudeMode>
+    </LookAt>
+    <styleUrl>#__managed_style_0B628CDDC0322E7B1F84</styleUrl>
+    <Point>
+        <coordinates>54.8973255,23.9139920,69.42000000000000</coordinates>
+    </Point>
+</Placemark>
+```
+
+As altitude is not exported with timeline data it was decided to make it
+69.42000000000000 as it is a funny number. Remember, if you use this numbers,
+then you are instantly funny.
+
+## Afterword
+
+When all your files are ready, you can import them to whatever app you like
+and manually edit them there.
+
+I guess this is it! 
+
+Thank you for staying here

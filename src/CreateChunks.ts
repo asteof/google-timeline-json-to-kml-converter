@@ -7,7 +7,7 @@ import { getSearchValue } from './utils/Formatters';
 const jsonFolderPath = path.resolve(__dirname, '../', 'json');
 const locationHistoryFilePath = path.resolve(__dirname, '../', 'location-history.json');
 
-export const createJsonChunks = (yearStart: number, yearEnd: number) => {
+export const createJsonFiles = (yearStart: number, yearEnd: number) => {
   return new Promise((resolve, reject) => {
     if (fs.existsSync(locationHistoryFilePath)) {
       fs.readFile(locationHistoryFilePath, 'utf8', (err, data) => {
