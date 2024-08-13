@@ -1,8 +1,9 @@
 import { timelinePathCoordinatesSeparator, TOKENS } from '../Constants';
 import { TimelineType } from '../types';
 
-export const createNameElement = (name: string, type: string) => {
-  return `<name>${type}-${name}</name>`;
+export const createNameElement = (date: string, type: string, index?: number) => {
+  const name = [type, date, index].filter(Boolean).join('-');
+  return `<name>${name}</name>`;
 };
 
 export const createLookAt = (longitude: string, latitude: string, altitude: string) => {
@@ -51,13 +52,13 @@ const getLatLngAlt = (coordinates, type: 'path' | 'visit') => {
   };
 };
 
-export const createPlacemark = (name: string, coordinates: string, type: TimelineType) => {
+export const createPlacemark = (date: string, coordinates: string, type: TimelineType, index: number) => {
   const {longitude, latitude, altitude} = getLatLngAlt(coordinates, type);
   const mapElement = type === 'path' ? createLineStringElement(coordinates) : createPointElement(coordinates);
 
   return [
     `<Placemark id="${generatePlacemarkId()}">`,
-    createNameElement(name, type),
+    createNameElement(date, type, index),
     createLookAt(longitude, latitude, altitude),
     TOKENS.styleUrl,
     mapElement,
@@ -73,14 +74,14 @@ const generatePlacemarkId = () => {
     .toUpperCase();
 };
 
-export const createKMLFileContent = (coordinatesCollection: string[], name: string, type: TimelineType) => {
-  const placemarks = coordinatesCollection.map((coordinates) => createPlacemark(name, coordinates, type));
+export const createKMLFileContent = (coordinatesCollection: string[], date: string, type: TimelineType) => {
+  const placemarks = coordinatesCollection.map((coordinates, index) => createPlacemark(date, coordinates, type, index + 1));
 
   const content = [
     TOKENS.xml,
     TOKENS.kmlStart,
     TOKENS.documentStart,
-    createNameElement(name, type),
+    createNameElement(date, type),
     TOKENS.style1,
     TOKENS.style2,
     TOKENS.styleMap,
